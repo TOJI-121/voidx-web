@@ -12,9 +12,10 @@ const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
+      config.headers = config.headers || {}
       const token = localStorage.getItem('voidx_token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      if (token && !config.headers['Authorization']) {
+        config.headers['Authorization'] = `Bearer ${token}`;
       }
     }
     return config;
@@ -62,3 +63,5 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+export const apiClient = api;
