@@ -281,7 +281,7 @@ export default function StoragePage() {
 
                         {/* Info */}
                         <p className="text-xs text-white truncate">{file.originalName || file.name}</p>
-                        <p className="text-xs text-gray-500">{formatBytes(file.sizeBytes || file.size_bytes || 0)}</p>
+                        <p className="text-xs text-gray-500">{formatBytes(file.sizeBytes || 0)}</p>
 
                         {/* Delete Button */}
                         <button
@@ -325,7 +325,7 @@ export default function StoragePage() {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-white truncate">{file.originalName || file.name}</p>
                           <p className="text-xs text-gray-400">
-                            {formatBytes(file.sizeBytes || file.size_bytes || 0)} · {file.mimeType}
+                            {formatBytes(file.sizeBytes || 0)} · {file.mimeType}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
