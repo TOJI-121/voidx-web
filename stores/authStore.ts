@@ -1,117 +1,112 @@
 import { create } from 'zustand';
-import api from '@/lib/api';
 
 interface User {
   id: string;
   email: string;
   fullName: string;
-  createdAt?: string;
 }
 
 interface AuthState {
   user: User | null;
-  accessToken: string | null;
-  isLoading: boolean;
+  token: string | null;
   isAuthenticated: boolean;
-
-  setUser: (user: User | null) => void;
-  setAccessToken: (token: string | null) => void;
+  isLoading: boolean;
+  
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string, fullName: string) => Promise<boolean>;
   logout: () => void;
-  initialize: () => Promise<void>;
+  init: () => void;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
-  accessToken: null,
-  isLoading: true,
+  token: null,
   isAuthenticated: false,
+  isLoading: true,
 
-  setUser: (user) => {
-    if (!user) {
-      set({ user: null, isAuthenticated: false })
-      return
+  init: () => {
+    if (typeof window === 'undefined') return;
+    
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    
+    if (token && userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        set({ user, token, isAuthenticated: true, isLoading: false });
+        return;
+      } catch (e) {
+        console.error('Failed to parse user:', e);
+      }
     }
-    const normalizedUser = {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName || (user as any).full_name || '',
-      createdAt: user.createdAt || (user as any).created_at || '',
-    }
-    set({ user: normalizedUser, isAuthenticated: true })
-    localStorage.setItem('voidx_user', JSON.stringify(normalizedUser))
+    
+    set({ isLoading: false });
   },
 
-  setAccessToken: (token) => {
-    if (token) {
-      localStorage.setItem('voidx_token', token);
-    } else {
-      localStorage.removeItem('voidx_token');
+  login: async (email, password) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await res.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Login failed');
+      }
+      
+      const { accessToken, user } = data.data;
+      
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      set({ user, token: accessToken, isAuthenticated: true });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Login error:', error);
+      throw error;
     }
-    set({ accessToken: token });
+  },
+
+  register: async (email, password, fullName) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password, fullName }),
+      });
+      
+      const data = await res.json();
+      
+      if (!data.success) {
+        throw new Error(data.error || 'Registration failed');
+      }
+      
+      const { accessToken, user } = data.data;
+      
+      localStorage.setItem('token', accessToken);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      set({ user, token: accessToken, isAuthenticated: true });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Register error:', error);
+      throw error;
+    }
   },
 
   logout: () => {
-    localStorage.removeItem('voidx_token')
-    localStorage.removeItem('voidx_user')
-    set({ user: null, accessToken: null, isAuthenticated: false })
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login'
-    }
-  },
-
-  initialize: async () => {
-    if (typeof window === 'undefined') return
-
-    const token = localStorage.getItem('voidx_token')
-    const savedUser = localStorage.getItem('voidx_user')
-    
-    console.log('[AUTH INIT] Token exists:', !!token)
-    console.log('[AUTH INIT] User exists:', !!savedUser)
-
-    if (!token) {
-      console.log('[AUTH INIT] No token, setting unauthenticated')
-      set({ isLoading: false, isAuthenticated: false })
-      return
-    }
-
-    // Restore user from localStorage immediately
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser)
-        console.log('[AUTH INIT] Restored user from localStorage:', parsed.email)
-        set({ user: parsed, isAuthenticated: true, accessToken: token, isLoading: false })
-      } catch (e) {
-        console.log('[AUTH INIT] Failed to parse user')
-      }
-    } else {
-      set({ isLoading: false, isAuthenticated: true, accessToken: token })
-    }
-
-    // Then fetch fresh data from API
-    try {
-      const response = await api.get('/api/auth/me')
-      if (response.data.success) {
-        const rawUser = response.data.data
-        const normalizedUser = {
-          id: rawUser.id,
-          email: rawUser.email,
-          fullName: rawUser.fullName || rawUser.full_name || '',
-          createdAt: rawUser.createdAt || rawUser.created_at || '',
-        }
-        get().setUser(normalizedUser)
-        set({
-          accessToken: token,
-          isLoading: false,
-        })
-      } else {
-        localStorage.removeItem('voidx_token')
-        localStorage.removeItem('voidx_user')
-        set({ isLoading: false, isAuthenticated: false, user: null })
-      }
-    } catch {
-      localStorage.removeItem('voidx_token')
-      localStorage.removeItem('voidx_user')
-      set({ isLoading: false, isAuthenticated: false, user: null })
-    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    set({ user: null, token: null, isAuthenticated: false });
+    window.location.href = '/login';
   },
 }));
