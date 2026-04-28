@@ -47,13 +47,12 @@ export default function DashboardLayout({
   }, [initialize]);
 
   useEffect(() => {
-    // Add small delay to prevent race condition during auth initialization
-    const timer = setTimeout(() => {
-      if (!isLoading && !isAuthenticated) {
-        router.push('/login');
-      }
-    }, 500);
-    return () => clearTimeout(timer);
+    // Wait for auth initialization to complete before redirecting
+    if (isLoading) return; // Don't check while still loading
+    
+    if (!isAuthenticated) {
+      router.push('/login');
+    }
   }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
