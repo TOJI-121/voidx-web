@@ -8,6 +8,7 @@ export type Project = {
   storageFiles: number;
   storageSizeBytes: number;
   createdAt: string;
+  updatedAt: string;
 };
 
 interface ProjectState {
