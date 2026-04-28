@@ -1,4 +1,6 @@
-﻿.next
-node_modules
+﻿node_modules/
+.next/
+.env.local
+.env.production
 *.log
-package-lock.json
+.DS_Store

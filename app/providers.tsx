@@ -8,7 +8,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 60000,
+        staleTime: 1000 * 60, // 1 minute
         retry: 1,
       },
     },

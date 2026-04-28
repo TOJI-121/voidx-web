@@ -5,7 +5,6 @@ interface User {
   id: string;
   email: string;
   fullName: string;
-  createdAt?: string;
 }
 
 interface AuthState {
@@ -20,25 +19,14 @@ interface AuthState {
   initialize: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   accessToken: null,
   isLoading: true,
   isAuthenticated: false,
 
   setUser: (user) => {
-    if (!user) {
-      set({ user: null, isAuthenticated: false })
-      return
-    }
-    const normalizedUser = {
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName || (user as any).full_name || '',
-      createdAt: user.createdAt || (user as any).created_at || '',
-    }
-    set({ user: normalizedUser, isAuthenticated: true })
-    localStorage.setItem('voidx_user', JSON.stringify(normalizedUser))
+    set({ user, isAuthenticated: !!user });
   },
 
   setAccessToken: (token) => {
@@ -51,57 +39,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    localStorage.removeItem('voidx_token')
-    localStorage.removeItem('voidx_user')
-    set({ user: null, accessToken: null, isAuthenticated: false })
+    localStorage.removeItem('voidx_token');
+    set({ user: null, accessToken: null, isAuthenticated: false });
     if (typeof window !== 'undefined') {
-      window.location.href = '/login'
+      window.location.href = '/login';
     }
   },
 
   initialize: async () => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') return;
 
-    const token = localStorage.getItem('voidx_token')
+    const token = localStorage.getItem('voidx_token');
     if (!token) {
-      set({ isLoading: false, isAuthenticated: false })
-      return
+      set({ isLoading: false, isAuthenticated: false });
+      return;
     }
 
-    // Try to restore user from localStorage first for quick UI render
-    const savedUser = localStorage.getItem('voidx_user')
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser)
-        set({ user: parsed, isAuthenticated: true, accessToken: token })
-      } catch (e) {}
-    }
-
-    // Then fetch fresh data from API
     try {
-      const response = await api.get('/api/auth/me')
+      const response = await api.get('/api/auth/me');
       if (response.data.success) {
-        const rawUser = response.data.data
-        const normalizedUser = {
-          id: rawUser.id,
-          email: rawUser.email,
-          fullName: rawUser.fullName || rawUser.full_name || '',
-          createdAt: rawUser.createdAt || rawUser.created_at || '',
-        }
-        get().setUser(normalizedUser)
         set({
+          user: response.data.data,
           accessToken: token,
+          isAuthenticated: true,
           isLoading: false,
-        })
+        });
       } else {
-        localStorage.removeItem('voidx_token')
-        localStorage.removeItem('voidx_user')
-        set({ isLoading: false, isAuthenticated: false, user: null })
+        localStorage.removeItem('voidx_token');
+        set({ isLoading: false, isAuthenticated: false });
       }
     } catch {
-      localStorage.removeItem('voidx_token')
-      localStorage.removeItem('voidx_user')
-      set({ isLoading: false, isAuthenticated: false, user: null })
+      localStorage.removeItem('voidx_token');
+      set({ isLoading: false, isAuthenticated: false });
     }
   },
 }));
