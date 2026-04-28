@@ -47,9 +47,13 @@ export default function DashboardLayout({
   }, [initialize]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
-    }
+    // Add small delay to prevent race condition during auth initialization
+    const timer = setTimeout(() => {
+      if (!isLoading && !isAuthenticated) {
+        router.push('/login');
+      }
+    }, 500);
+    return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {
