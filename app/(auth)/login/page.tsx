@@ -23,6 +23,8 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log('[LOGIN] Form submitted, preventDefault called');
     setError('');
     setIsLoading(true);
     console.log('[LOGIN] Submitting:', email);
@@ -43,8 +45,9 @@ export default function LoginPage() {
       useAuthStore.getState().setUser(user);
       
       console.log('[LOGIN] Success, navigating to /projects');
+      alert('Login successful! Redirecting...');
       // Hard redirect to dashboard
-      window.location.replace('/projects');
+      window.location.href = '/projects';
     } catch (err: any) {
       console.error('[LOGIN] Error:', err?.response?.data || err?.message);
       setError(err?.response?.data?.error || 'Login failed');
