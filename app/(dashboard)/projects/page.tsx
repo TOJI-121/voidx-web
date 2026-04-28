@@ -10,7 +10,7 @@ interface Project {
   created_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
