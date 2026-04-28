@@ -35,11 +35,18 @@ export default function LoginPage() {
       console.log('[LOGIN] Response:', response.data);
 
       const { accessToken, user } = response.data.data;
+      console.log('[LOGIN] Token:', accessToken ? 'received' : 'missing');
+      console.log('[LOGIN] User:', user);
+      
+      // Set auth state first
       useAuthStore.getState().setAccessToken(accessToken);
       useAuthStore.getState().setUser(user);
+      
       console.log('[LOGIN] Success, navigating to /projects');
-      // Use window.location for reliable navigation after login
-      window.location.href = '/projects';
+      // Use router.push for client-side navigation
+      setTimeout(() => {
+        router.push('/projects');
+      }, 100);
     } catch (err: any) {
       console.error('[LOGIN] Error:', err?.response?.data || err?.message);
       setError(err?.response?.data?.error || 'Login failed');
