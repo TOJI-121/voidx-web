@@ -45,9 +45,10 @@ export default function LoginPage() {
       useAuthStore.getState().setUser(user);
       
       console.log('[LOGIN] Success, navigating to /projects');
-      alert('Login successful! Redirecting...');
-      // Hard redirect to dashboard
-      window.location.href = '/projects';
+      // Navigate to dashboard - let auth state persist via localStorage
+      setTimeout(() => {
+        window.location.href = '/projects';
+      }, 100);
     } catch (err: any) {
       console.error('[LOGIN] Error:', err?.response?.data || err?.message);
       setError(err?.response?.data?.error || 'Login failed');

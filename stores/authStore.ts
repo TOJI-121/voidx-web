@@ -63,18 +63,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (typeof window === 'undefined') return
 
     const token = localStorage.getItem('voidx_token')
+    const savedUser = localStorage.getItem('voidx_user')
+    
+    console.log('[AUTH INIT] Token exists:', !!token)
+    console.log('[AUTH INIT] User exists:', !!savedUser)
+
     if (!token) {
+      console.log('[AUTH INIT] No token, setting unauthenticated')
       set({ isLoading: false, isAuthenticated: false })
       return
     }
 
-    // Try to restore user from localStorage first for quick UI render
-    const savedUser = localStorage.getItem('voidx_user')
+    // Restore user from localStorage immediately
     if (savedUser) {
       try {
         const parsed = JSON.parse(savedUser)
-        set({ user: parsed, isAuthenticated: true, accessToken: token })
-      } catch (e) {}
+        console.log('[AUTH INIT] Restored user from localStorage:', parsed.email)
+        set({ user: parsed, isAuthenticated: true, accessToken: token, isLoading: false })
+      } catch (e) {
+        console.log('[AUTH INIT] Failed to parse user')
+      }
+    } else {
+      set({ isLoading: false, isAuthenticated: true, accessToken: token })
     }
 
     // Then fetch fresh data from API
