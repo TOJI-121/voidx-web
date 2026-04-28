@@ -43,10 +43,8 @@ export default function LoginPage() {
       useAuthStore.getState().setUser(user);
       
       console.log('[LOGIN] Success, navigating to /projects');
-      // Use router.push for client-side navigation
-      setTimeout(() => {
-        router.push('/projects');
-      }, 100);
+      // Hard redirect to dashboard
+      window.location.replace('/projects');
     } catch (err: any) {
       console.error('[LOGIN] Error:', err?.response?.data || err?.message);
       setError(err?.response?.data?.error || 'Login failed');
