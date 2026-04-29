@@ -12,13 +12,15 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const { register, isAuthenticated, init } = useAuthStore();
 
+  // Check auth on mount
   useEffect(() => {
     init();
-  }, [init]);
+  }, []);
 
-  // Redirect if already logged in
+  // Simple redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('Already logged in, going to dashboard...');
       window.location.href = '/projects';
     }
   }, [isAuthenticated]);
@@ -30,8 +32,13 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, fullName);
-      // Redirect happens automatically via useEffect above
+      console.log('Register successful, redirecting...');
+      // Force redirect after successful register
+      setTimeout(() => {
+        window.location.href = '/projects';
+      }, 100);
     } catch (err: any) {
+      console.error('Register failed:', err);
       setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);

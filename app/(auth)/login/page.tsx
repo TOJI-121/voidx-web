@@ -9,30 +9,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated, isLoading, init } = useAuthStore();
+  const { login, isAuthenticated, init } = useAuthStore();
 
+  // Check auth on mount
   useEffect(() => {
     init();
-  }, [init]);
+  }, []);
 
-  // Redirect if already logged in (but not during loading)
+  // Simple redirect if already logged in
   useEffect(() => {
-    console.log('[LOGIN] Effect triggered - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
-    
-    if (isLoading) {
-      console.log('[LOGIN] Still loading, skipping redirect check');
-      return;
-    }
-    
     if (isAuthenticated) {
-      console.log('[LOGIN] AUTHENTICATED - attempting redirect to /projects');
-      console.log('[LOGIN] Current URL:', window.location.href);
+      console.log('Already logged in, going to dashboard...');
       window.location.href = '/projects';
-      console.log('[LOGIN] Redirect called');
-    } else {
-      console.log('[LOGIN] NOT authenticated, staying on login page');
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +31,13 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      // Redirect happens automatically via useEffect above
+      console.log('Login successful, redirecting...');
+      // Force redirect after successful login
+      setTimeout(() => {
+        window.location.href = '/projects';
+      }, 100);
     } catch (err: any) {
+      console.error('Login failed:', err);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);

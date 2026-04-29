@@ -4,13 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
-import { 
-  LayoutDashboard, 
-  Database, 
-  Settings, 
-  LogOut,
-  User
-} from 'lucide-react';
+import { LayoutDashboard, Database, Settings, LogOut, User } from 'lucide-react';
 
 const navItems = [
   { href: '/projects', label: 'Projects', icon: LayoutDashboard },
@@ -26,24 +20,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     setMounted(true);
     init();
-  }, [init]);
+  }, []);
 
-  // Redirect to login if not authenticated (after loading)
+  // Simple auth check
   useEffect(() => {
     if (!mounted) return;
-    if (isLoading) return; // Still loading auth state
+    if (isLoading) return;
     
-    // Add small delay to ensure auth check is complete
-    const timer = setTimeout(() => {
-      if (!isAuthenticated) {
-        console.log('[DASHBOARD] Not authenticated, redirecting to login');
-        window.location.href = '/login';
-      } else {
-        console.log('[DASHBOARD] Authenticated, staying on dashboard');
-      }
-    }, 500);
-    
-    return () => clearTimeout(timer);
+    if (!isAuthenticated) {
+      console.log('Not authenticated, redirecting to login...');
+      window.location.href = '/login';
+    }
   }, [mounted, isLoading, isAuthenticated]);
 
   if (!mounted || isLoading) {
@@ -54,7 +41,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  // Don't render dashboard content if not authenticated (redirect handled by useEffect above)
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
