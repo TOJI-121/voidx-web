@@ -54,8 +54,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  // Don't render dashboard content if not authenticated (redirect handled by useEffect above)
   if (!isAuthenticated) {
-    return null; // Will redirect
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="text-white">Redirecting to login...</div>
+      </div>
+    );
   }
 
   return (

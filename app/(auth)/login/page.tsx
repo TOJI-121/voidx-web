@@ -9,24 +9,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated, init } = useAuthStore();
+  const { login, isAuthenticated, isLoading, init } = useAuthStore();
 
   useEffect(() => {
     init();
   }, [init]);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (but not during loading)
   useEffect(() => {
-    console.log('[LOGIN] Auth check - isAuthenticated:', isAuthenticated);
+    if (isLoading) return; // Don't redirect while checking auth
+    
+    console.log('[LOGIN] Auth check - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
     if (isAuthenticated) {
       console.log('[LOGIN] Already authenticated, redirecting to dashboard');
-      console.log('[LOGIN] Redirecting to /projects');
-      console.log('[LOGIN] Window location:', window.location);
-      window.location.href = '/projects';
-    } else {
-      console.log('[LOGIN] Not authenticated, staying on login page');
+      window.location.replace('/projects');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
