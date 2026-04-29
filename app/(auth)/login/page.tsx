@@ -17,12 +17,20 @@ export default function LoginPage() {
 
   // Redirect if already logged in (but not during loading)
   useEffect(() => {
-    if (isLoading) return; // Don't redirect while checking auth
+    console.log('[LOGIN] Effect triggered - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
     
-    console.log('[LOGIN] Auth check - isAuthenticated:', isAuthenticated, 'isLoading:', isLoading);
+    if (isLoading) {
+      console.log('[LOGIN] Still loading, skipping redirect check');
+      return;
+    }
+    
     if (isAuthenticated) {
-      console.log('[LOGIN] Already authenticated, redirecting to dashboard');
-      window.location.replace('/projects');
+      console.log('[LOGIN] AUTHENTICATED - attempting redirect to /projects');
+      console.log('[LOGIN] Current URL:', window.location.href);
+      window.location.href = '/projects';
+      console.log('[LOGIN] Redirect called');
+    } else {
+      console.log('[LOGIN] NOT authenticated, staying on login page');
     }
   }, [isAuthenticated, isLoading]);
 
