@@ -17,10 +17,10 @@ export default function RegisterPage() {
     init();
   }, []);
 
-  // Simple redirect if already logged in
+  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('Already logged in, going to dashboard...');
+      console.log('[REGISTER] Already authenticated, redirecting to dashboard');
       window.location.href = '/projects';
     }
   }, [isAuthenticated]);
@@ -32,13 +32,11 @@ export default function RegisterPage() {
 
     try {
       await register(email, password, fullName);
-      console.log('Register successful, redirecting...');
+      console.log('[REGISTER] Success, redirecting...');
       // Force redirect after successful register
-      setTimeout(() => {
-        window.location.href = '/projects';
-      }, 100);
+      window.location.href = '/projects';
     } catch (err: any) {
-      console.error('Register failed:', err);
+      console.error('[REGISTER] Error:', err.message);
       setError(err.message || 'Registration failed');
     } finally {
       setLoading(false);
@@ -95,7 +93,7 @@ export default function RegisterPage() {
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
               placeholder="••••••••"
             />
-            <p className="text-xs text-gray-500 mt-1">Min 8 characters with a number</p>
+            <p className="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
           </div>
 
           <button

@@ -22,17 +22,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     init();
   }, []);
 
-  // Simple auth check
+  // Simple auth check - redirect if not authenticated
   useEffect(() => {
     if (!mounted) return;
     if (isLoading) return;
     
     if (!isAuthenticated) {
-      console.log('Not authenticated, redirecting to login...');
+      console.log('[DASHBOARD] Not authenticated, redirecting to login...');
       window.location.href = '/login';
+    } else {
+      console.log('[DASHBOARD] Authenticated, showing dashboard');
     }
   }, [mounted, isLoading, isAuthenticated]);
 
+  // Show loading while checking auth
   if (!mounted || isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -41,6 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  // Don't render dashboard content if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">

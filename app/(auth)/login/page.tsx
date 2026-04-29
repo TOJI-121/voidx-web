@@ -16,10 +16,10 @@ export default function LoginPage() {
     init();
   }, []);
 
-  // Simple redirect if already logged in
+  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated) {
-      console.log('Already logged in, going to dashboard...');
+      console.log('[LOGIN] Already authenticated, redirecting to dashboard');
       window.location.href = '/projects';
     }
   }, [isAuthenticated]);
@@ -31,13 +31,11 @@ export default function LoginPage() {
 
     try {
       await login(email, password);
-      console.log('Login successful, redirecting...');
+      console.log('[LOGIN] Success, redirecting...');
       // Force redirect after successful login
-      setTimeout(() => {
-        window.location.href = '/projects';
-      }, 100);
+      window.location.href = '/projects';
     } catch (err: any) {
-      console.error('Login failed:', err);
+      console.error('[LOGIN] Error:', err.message);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);

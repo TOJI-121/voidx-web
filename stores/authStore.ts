@@ -4,6 +4,8 @@ interface User {
   id: string;
   email: string;
   fullName: string;
+  isVerified: boolean;
+  createdAt: string;
 }
 
 interface AuthState {
@@ -36,21 +38,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       try {
         const user = JSON.parse(userStr);
         set({ user, token, isAuthenticated: true, isLoading: false });
+        console.log('[AUTH] Restored from localStorage');
         return;
       } catch (e) {
-        console.error('Failed to parse user:', e);
+        console.error('[AUTH] Failed to parse user:', e);
       }
     }
     
     set({ isLoading: false });
+    console.log('[AUTH] No stored session found');
   },
 
   login: async (email, password) => {
     try {
+      console.log('[AUTH] Logging in...');
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
       
@@ -66,21 +70,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('user', JSON.stringify(user));
       
       set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
-      console.log('[AUTH] Login successful, state updated');
+      console.log('[AUTH] Login successful');
       
       return true;
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('[AUTH] Login error:', error.message);
       throw error;
     }
   },
 
   register: async (email, password, fullName) => {
     try {
+      console.log('[AUTH] Registering...');
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email, password, fullName }),
       });
       
@@ -96,11 +100,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('user', JSON.stringify(user));
       
       set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
-      console.log('[AUTH] Register successful, state updated');
+      console.log('[AUTH] Register successful');
       
       return true;
     } catch (error: any) {
-      console.error('Register error:', error);
+      console.error('[AUTH] Register error:', error.message);
       throw error;
     }
   },
@@ -108,7 +112,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    set({ user: null, token: null, isAuthenticated: false });
+    set({ user: null, token: null, isAuthenticated: false, isLoading: false });
+    console.log('[AUTH] Logged out');
     window.location.href = '/login';
   },
 }));
