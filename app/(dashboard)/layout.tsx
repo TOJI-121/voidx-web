@@ -30,9 +30,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Redirect to login if not authenticated (after loading)
   useEffect(() => {
-    if (mounted && !isLoading && !isAuthenticated) {
-      window.location.href = '/login';
-    }
+    if (!mounted) return;
+    if (isLoading) return; // Still loading auth state
+    
+    // Add small delay to ensure auth check is complete
+    const timer = setTimeout(() => {
+      if (!isAuthenticated) {
+        console.log('[DASHBOARD] Not authenticated, redirecting to login');
+        window.location.href = '/login';
+      } else {
+        console.log('[DASHBOARD] Authenticated, staying on dashboard');
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [mounted, isLoading, isAuthenticated]);
 
   if (!mounted || isLoading) {

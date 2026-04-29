@@ -65,7 +65,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       
-      set({ user, token: accessToken, isAuthenticated: true });
+      set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
+      console.log('[AUTH] Login successful, state updated');
       
       return true;
     } catch (error: any) {
@@ -94,7 +95,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
       
-      set({ user, token: accessToken, isAuthenticated: true });
+      set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
+      console.log('[AUTH] Register successful, state updated');
       
       return true;
     } catch (error: any) {

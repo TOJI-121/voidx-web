@@ -17,8 +17,14 @@ export default function LoginPage() {
 
   // Redirect if already logged in
   useEffect(() => {
+    console.log('[LOGIN] Auth check - isAuthenticated:', isAuthenticated);
     if (isAuthenticated) {
+      console.log('[LOGIN] Already authenticated, redirecting to dashboard');
+      console.log('[LOGIN] Redirecting to /projects');
+      console.log('[LOGIN] Window location:', window.location);
       window.location.href = '/projects';
+    } else {
+      console.log('[LOGIN] Not authenticated, staying on login page');
     }
   }, [isAuthenticated]);
 
