@@ -2,16 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
+import api from '@/lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const { login, isAuthenticated, init } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const { isAuthenticated, init } = useAuthStore();
 
   // Check auth on mount
   useEffect(() => {
@@ -22,24 +21,38 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       console.log('[LOGIN] Already authenticated, redirecting to dashboard');
-      router.push('/projects');
+      window.location.href = '/projects';
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     setError('');
-    setLoading(true);
 
     try {
-      await login(email, password);
-      console.log('[LOGIN] Success, redirecting...');
-      router.push('/projects');
+      const response = await api.post('/api/auth/login', { email, password });
+      const { accessToken, user } = response.data.data;
+
+      // Save to localStorage FIRST
+      localStorage.setItem('voidx_token', accessToken);
+      localStorage.setItem('voidx_user', JSON.stringify({
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName || user.full_name || '',
+        createdAt: user.createdAt || user.created_at || '',
+      }));
+
+      // Update store
+      useAuthStore.getState().setAccessToken(accessToken);
+      useAuthStore.getState().setUser(user);
+
+      // Use window.location for full page reload
+      window.location.href = '/projects';
+
     } catch (err: any) {
-      console.error('[LOGIN] Error:', err.message);
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      setError(err.response?.data?.error || 'Login failed. Check your credentials.');
+      setIsLoading(false);
     }
   };
 
@@ -85,10 +98,10 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
           >
-            {loading ? 'Signing in...' : 'Sign In'}
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 

@@ -19,6 +19,8 @@ interface AuthState {
   register: (email: string, password: string, fullName: string) => Promise<boolean>;
   logout: () => void;
   init: () => Promise<void>;
+  setAccessToken: (token: string) => void;
+  setUser: (user: any) => void;
 }
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
@@ -157,5 +159,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: null, token: null, isAuthenticated: false, isLoading: false });
     console.log('[AUTH] Logged out');
     window.location.href = '/login';
+  },
+
+  setAccessToken: (token: string) => {
+    set({ token, isAuthenticated: true });
+  },
+
+  setUser: (user: any) => {
+    const normalizedUser = {
+      id: user.id,
+      email: user.email,
+      fullName: user.fullName || user.full_name || '',
+      createdAt: user.createdAt || user.created_at || '',
+      isVerified: user.isVerified || user.is_verified || false,
+    };
+    set({ user: normalizedUser });
   },
 }));
