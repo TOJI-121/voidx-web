@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 import { LayoutDashboard, Database, Settings, LogOut, User } from 'lucide-react';
 
@@ -14,6 +14,7 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, isAuthenticated, isLoading, init, logout } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
@@ -29,28 +30,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     
     if (!isAuthenticated) {
       console.log('[DASHBOARD] Not authenticated, redirecting to login...');
-      window.location.href = '/login';
+      router.push('/login');
     } else {
       console.log('[DASHBOARD] Authenticated, showing dashboard');
     }
-  }, [mounted, isLoading, isAuthenticated]);
+  }, [mounted, isLoading, isAuthenticated, router]);
 
   // Show loading while checking auth
   if (!mounted || isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
       </div>
     );
   }
 
-  // Don't render dashboard content if not authenticated
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <div className="text-white">Redirecting to login...</div>
-      </div>
-    );
+    return null;
   }
 
   return (

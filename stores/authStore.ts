@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import Cookies from 'js-cookie';
 
 interface User {
   id: string;
@@ -17,7 +18,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, fullName: string) => Promise<boolean>;
   logout: () => void;
-  init: () => void;
+  init: () => Promise<void>;
 }
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001').replace(/\/$/, '');
@@ -28,25 +29,55 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
   isLoading: true,
 
-  init: () => {
+  init: async () => {
     if (typeof window === 'undefined') return;
     
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        set({ user, token, isAuthenticated: true, isLoading: false });
-        console.log('[AUTH] Restored from localStorage');
+    set({ isLoading: true });
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        set({ isLoading: false, isAuthenticated: false });
         return;
-      } catch (e) {
-        console.error('[AUTH] Failed to parse user:', e);
       }
+      
+      // Set token first
+      set({ token });
+      
+      // Try to get saved user from localStorage
+      const savedUser = localStorage.getItem('user');
+      if (savedUser) {
+        try {
+          const parsed = JSON.parse(savedUser);
+          set({ user: parsed, isAuthenticated: true });
+        } catch(e) {}
+      }
+      
+      // Verify token with backend
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (!res.ok) throw new Error('Token invalid');
+      
+      const data = await res.json();
+      const rawUser = data.data;
+      const normalizedUser = {
+        id: rawUser.id,
+        email: rawUser.email,
+        fullName: rawUser.fullName || rawUser.full_name || '',
+        createdAt: rawUser.createdAt || rawUser.created_at || '',
+        isVerified: rawUser.isVerified || rawUser.is_verified || false,
+      };
+      set({ user: normalizedUser, isAuthenticated: true });
+      localStorage.setItem('user', JSON.stringify(normalizedUser));
+    } catch(e) {
+      // Token invalid - clear everything
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      set({ user: null, isAuthenticated: false, token: null });
+    } finally {
+      set({ isLoading: false });
     }
-    
-    set({ isLoading: false });
-    console.log('[AUTH] No stored session found');
   },
 
   login: async (email, password) => {
@@ -64,10 +95,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(data.error || 'Login failed');
       }
       
+      if (!data.data) {
+        throw new Error('Invalid response payload from server');
+      }
+      
       const { accessToken, user } = data.data;
       
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
+      Cookies.set('voidx_token', accessToken, { expires: 7, path: '/' });
       
       set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
       console.log('[AUTH] Login successful');
@@ -94,10 +130,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(data.error || 'Registration failed');
       }
       
+      if (!data.data) {
+        throw new Error('Invalid response payload from server');
+      }
+      
       const { accessToken, user } = data.data;
       
       localStorage.setItem('token', accessToken);
       localStorage.setItem('user', JSON.stringify(user));
+      Cookies.set('voidx_token', accessToken, { expires: 7, path: '/' });
       
       set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
       console.log('[AUTH] Register successful');
@@ -112,6 +153,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    Cookies.remove('voidx_token', { path: '/' });
     set({ user: null, token: null, isAuthenticated: false, isLoading: false });
     console.log('[AUTH] Logged out');
     window.location.href = '/login';

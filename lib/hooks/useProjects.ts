@@ -27,12 +27,29 @@ export type CreateProjectData = {
   description?: string
 }
 
+interface RawProject {
+  id: string;
+  name: string;
+  description: string;
+  isActive: boolean;
+  createdAt?: string;
+  created_at?: string;
+  updatedAt?: string;
+  updated_at?: string;
+  storageFiles?: number | string;
+  storage_files?: number | string;
+  storageSizeBytes?: number | string;
+  storage_size_bytes?: number | string;
+  storagefilesbytes?: number | string;
+  [key: string]: unknown;
+}
+
 export function useProjects() {
   return useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const res = await api.get('/api/projects')
-      return res.data.data.map((p: any) => ({
+      return res.data.data.map((p: RawProject) => ({
         ...p,
         createdAt: p.createdAt || p.created_at || new Date().toISOString(),
         updatedAt: p.updatedAt || p.updated_at || new Date().toISOString(),

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
 
 export default function LoginPage() {
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const { login, isAuthenticated, init } = useAuthStore();
 
   // Check auth on mount
@@ -20,9 +22,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (isAuthenticated) {
       console.log('[LOGIN] Already authenticated, redirecting to dashboard');
-      window.location.href = '/projects';
+      router.push('/projects');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +34,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       console.log('[LOGIN] Success, redirecting...');
-      // Force redirect after successful login
-      window.location.href = '/projects';
+      router.push('/projects');
     } catch (err: any) {
       console.error('[LOGIN] Error:', err.message);
       setError(err.message || 'Login failed');

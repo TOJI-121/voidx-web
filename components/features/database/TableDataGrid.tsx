@@ -137,7 +137,7 @@ export function TableDataGrid({ table, projectId, apiKey }: TableDataGridProps) 
             </thead>
             <tbody>
               {rows.map((row, index) => (
-                <tr key={row.id || index} className="bg-gray-900 hover:bg-gray-800/50 border-t border-gray-800">
+                <tr key={(row.id as string | number) || index} className="bg-gray-900 hover:bg-gray-800/50 border-t border-gray-800">
                   <td className="px-4 py-3">
                     <input type="checkbox" className="rounded border-gray-600" />
                   </td>
@@ -148,7 +148,7 @@ export function TableDataGrid({ table, projectId, apiKey }: TableDataGridProps) 
                   ))}
                   <td className="px-4 py-3">
                     <button
-                      onClick={() => handleDelete(row.id)}
+                      onClick={() => handleDelete(row.id as string)}
                       className="text-red-400 hover:text-red-300 transition-colors"
                     >
                       <Trash2 size={16} />

@@ -23,7 +23,7 @@ export type Table = {
   createdAt: string
 }
 
-export type Row = Record<string, any>
+export type Row = Record<string, unknown>
 
 export function useTables(projectId: string) {
   return useQuery({
@@ -39,7 +39,7 @@ export function useTables(projectId: string) {
 export function useCreateTable() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ projectId, tableData }: { projectId: string, tableData: any }) => {
+    mutationFn: async ({ projectId, tableData }: { projectId: string, tableData: Record<string, unknown> }) => {
       const res = await api.post(`/api/projects/${projectId}/tables`, tableData)
       return res.data.data
     },
@@ -81,7 +81,7 @@ export function useRows(projectId: string, tableName: string, apiKey: string) {
 export function useInsertRow() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ tableName, data, apiKey, projectId }: { tableName: string, data: any, apiKey: string, projectId: string }) => {
+    mutationFn: async ({ tableName, data, apiKey }: { tableName: string, data: Record<string, unknown>, apiKey: string, projectId: string }) => {
       const res = await api.post(`/api/data/${tableName}`, data, {
         headers: { 'x-api-key': apiKey }
       })
@@ -96,7 +96,7 @@ export function useInsertRow() {
 export function useUpdateRow() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ tableName, rowId, data, apiKey }: { tableName: string, rowId: string, data: any, apiKey: string }) => {
+    mutationFn: async ({ tableName, rowId, data, apiKey }: { tableName: string, rowId: string, data: Record<string, unknown>, apiKey: string }) => {
       const res = await api.patch(`/api/data/${tableName}/${rowId}`, data, {
         headers: { 'x-api-key': apiKey }
       })
@@ -111,7 +111,7 @@ export function useUpdateRow() {
 export function useDeleteRow() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ tableName, rowId, apiKey, projectId }: { tableName: string, rowId: string, apiKey: string, projectId: string }) => {
+    mutationFn: async ({ tableName, rowId, apiKey }: { tableName: string, rowId: string, apiKey: string, projectId: string }) => {
       await api.delete(`/api/data/${tableName}/${rowId}`, {
         headers: { 'x-api-key': apiKey }
       })

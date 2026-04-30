@@ -20,12 +20,42 @@ export type StorageFile = {
   createdAt: string
 }
 
+interface RawBucket {
+  id: string;
+  name: string;
+  isPublic?: boolean;
+  is_public?: boolean;
+  maxFileSizeBytes?: number;
+  max_file_size_bytes?: number;
+  createdAt?: string;
+  created_at?: string;
+  fileCount?: number;
+  file_count?: number;
+  [key: string]: unknown;
+}
+
+interface RawStorageFile {
+  id: string;
+  name: string;
+  originalName?: string;
+  original_name?: string;
+  mimeType?: string;
+  mime_type?: string;
+  sizeBytes?: number;
+  size_bytes?: number;
+  isPublic?: boolean;
+  is_public?: boolean;
+  createdAt?: string;
+  created_at?: string;
+  [key: string]: unknown;
+}
+
 export function useBuckets(projectId: string) {
   return useQuery({
     queryKey: ['buckets', projectId],
     queryFn: async () => {
       const res = await api.get(`/api/storage/${projectId}/buckets`)
-      return res.data.data.map((b: any) => ({
+      return res.data.data.map((b: RawBucket) => ({
         ...b,
         isPublic: b.isPublic ?? b.is_public ?? false,
         maxFileSizeBytes: b.maxFileSizeBytes || b.max_file_size_bytes || 52428800,
@@ -67,7 +97,7 @@ export function useFiles(projectId: string, bucketId: string) {
     queryKey: ['files', projectId, bucketId],
     queryFn: async () => {
       const res = await api.get(`/api/storage/${projectId}/buckets/${bucketId}/files`)
-      return res.data.data.map((f: any) => ({
+      return res.data.data.map((f: RawStorageFile) => ({
         ...f,
         originalName: f.originalName || f.original_name || f.name,
         mimeType: f.mimeType || f.mime_type || 'application/octet-stream',
